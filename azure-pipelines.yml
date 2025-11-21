@@ -31,3 +31,9 @@ stages:
         tags: |
           $(imageTag)
           latest # Optionally push with 'latest' tag as well
+- task: CmdLine@2
+  inputs:
+    script: |
+      echo Write your commands here
+      
+      echo Hello world
