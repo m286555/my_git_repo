@@ -1,11 +1,33 @@
-# syntax=docker/dockerfile:1
-FROM python:3.10-alpine
-WORKDIR /code
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-RUN apk add --no-cache gcc musl-dev linux-headers
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-EXPOSE 5000
-COPY . .
-CMD ["flask", "run", "--debug"]
+trigger:
+  branches:
+    include:
+      - main # Trigger the pipeline on commits to the 'main' branch
+
+pool:
+  vmImage: 'ubuntu-latest' # Use a Microsoft-hosted Ubuntu agent
+
+variables:
+  # Replace with your Azure Container Registry name
+  acrName: 'yourAcrName'
+  # Replace with your Docker image name
+  imageName: 'yourImageName'
+  # Replace with your image tag
+  imageTag: '$(Build.BuildId)' # Using the build ID as the tag
+
+stages:
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  jobs:
+  - job: BuildAndPushJob
+    displayName: Build and Push
+    steps:
+    - task: Docker@2
+      displayName: Build and Push Docker Image
+      inputs:
+        command: buildAndPush
+        repository: '$(imageName)'
+        dockerfile: '**/Dockerfile' # Path to your Dockerfile
+        containerRegistry: 'yourServiceConnectionName' # Name of your Docker Registry service connection
+        tags: |
+          $(imageTag)
+          latest # Optionally push with 'latest' tag as well
